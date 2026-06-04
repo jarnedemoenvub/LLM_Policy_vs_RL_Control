@@ -1,0 +1,11 @@
+controller_name,env_id,seed,episode,episode_seed,reward
+manual_controller,Pendulum-v1,42,1,42,-1182.2210765906962
+manual_controller,Pendulum-v1,42,2,43,-943.842244046537
+manual_controller,Pendulum-v1,42,3,44,-1519.3317081936143
+manual_controller,Pendulum-v1,42,4,45,-936.6061178276674
+manual_controller,Pendulum-v1,42,5,46,-1501.5381735235353
+manual_controller,Pendulum-v1,42,6,47,-1110.240310768094
+manual_controller,Pendulum-v1,42,7,48,-962.1834942725802
+manual_controller,Pendulum-v1,42,8,49,-971.1993921259991
+manual_controller,Pendulum-v1,42,9,50,-1211.0120283789638
+manual_controller,Pendulum-v1,42,10,51,-1491.5733306194636
