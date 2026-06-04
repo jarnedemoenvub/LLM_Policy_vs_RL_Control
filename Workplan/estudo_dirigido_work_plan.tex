@@ -1,0 +1,142 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{amsmath}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+\setstretch{1.08}
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.25em, topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=0.25em, topsep=0.25em}
+\renewcommand{\arraystretch}{1.18}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.75em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Estudo Dirigido Work Plan}
+\rhead{Jarne Demoen}
+\cfoot{Page \thepage\ of \pageref{LastPage}}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\deliverable}[1]{\textbf{Deliverable:} #1}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\Large \textbf{Estudo Dirigido Research Work Plan}}\\[0.6cm]
+    {\LARGE \textbf{Comparing LLM-Based Policy Generation and Reinforcement Learning for Embodied Control}}\\[1.0cm]
+    {\large Jarne Demoen}\\[0.2cm]
+    {Vrije Universiteit Brussel / Universidade Federal de Santa Catarina}\\[0.8cm]
+    {\large Supervisor: Prof. J\^{o}nata Tyska Carvalho}\\[1.0cm]
+    {\large Work period: 1 June 2026 -- 10 July 2026}\\[1.0cm]
+    \vfill
+    \begin{tabular}{rl}
+        Course: & Estudo Dirigido \\
+        Area: & Reinforcement Learning, Large Language Models, Embodied Agents \\
+        Document type: & Research work plan \\
+        Version: & 1.0 \\
+    \end{tabular}
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\section{Work Plan and Timeline}
+
+The work plan starts on Monday 1 June 2026 and ends on Friday 10 July 2026. The timeline is designed to produce a complete research artifact even if the ART component requires adjustment.
+
+\begin{longtable}{p{2.2cm} p{3.0cm} p{5.2cm} p{4.0cm}}
+\toprule
+\textbf{Period} & \textbf{Focus} & \textbf{Main activities} & \textbf{Expected output} \\
+\midrule
+\endhead
+
+1--5 June & Setup and research framing & Finalize scope, define environments, create repository structure, review the Carvalho and Nolfi method, inspect ART documentation, set up Gymnasium/RL dependencies, define logging format. & Research protocol, repository skeleton, environment sanity checks. \\
+
+8--12 June & Classical RL baselines & Implement or configure PPO, SAC, and DDPG baselines; run initial experiments on simple environments; define reward thresholds; verify reproducibility with fixed seeds. & Baseline training scripts, initial baseline results, experiment configuration files. \\
+
+15--19 June & LLM policy generation loop & Design structured prompts, implement controller code generation interface, execute one-shot generated policies, build safety checks for generated Python code, store generated policies and evaluation logs. & Working one-shot LLM controller pipeline with logs and first reward results. \\
+
+22--26 June & Iterative policy refinement & Implement refinement loop using performance feedback and sensory-motor traces; compare one-shot and refined controllers; tune feedback format; analyze failure cases. & Iterative refinement results, policy history, preliminary comparison against RL baselines. \\
+
+29 June--3 July & ART feasibility and extension & Attempt ART integration; formulate controller generation as a reward-based training task; run a minimal prototype & ART prototype, updated experimental comparison. \\
+
+6--10 July & Final analysis and report & Consolidate results, create plots and tables, interpret findings, write final report, document limitations and future work, clean repository for reproducibility. & Final report, final code repository, figures, tables, and presentation-ready summary. \\
+
+\bottomrule
+\end{longtable}
+
+\section{Detailed Weekly Milestones}
+
+\subsection*{Week 1: Setup, Scope, and Experimental Protocol}
+
+The first week focuses on reducing ambiguity. The project should not begin with large-scale experimentation before the environments, metrics, and logging format are fixed. The main tasks are to install the necessary packages, test selected Gymnasium environments, define a standard evaluation function, and create a consistent file structure for experiment outputs.
+
+\deliverable{A short protocol document describing the selected environments, reward thresholds, number of seeds, evaluation episodes, logging format, and computational constraints.}
+
+\subsection*{Week 2: Reinforcement Learning Baselines}
+
+The second week establishes reference results. Classical RL baselines should be trained under reasonable budgets and evaluated using the same evaluation function that will later be used for LLM-generated policies. The baseline results do not need to be state-of-the-art, but they must be consistent, reproducible, and well documented.
+
+\deliverable{Baseline results for the environments, including reward curves, final evaluation rewards, and configuration files.}
+
+\subsection*{Week 3: One-Shot LLM Controller Generation}
+
+The third week implements the first LLM-based method. The goal is to obtain executable controllers generated from structured prompts. Since generated code can be unstable, the pipeline should include syntax checks, runtime checks, bounded actions, exception handling, and logging of failed attempts. One-shot performance should be measured before refinement is introduced.
+
+\deliverable{A working one-shot LLM controller generation pipeline and an initial comparison against RL baselines.}
+
+\subsection*{Week 4: Iterative Policy Refinement}
+
+The fourth week introduces feedback-driven improvement. The LLM should receive structured information about previous performance, including reward values, selected trajectory summaries, and the best controller so far. The key question is whether repeated refinement improves controller quality compared to one-shot generation.
+
+\deliverable{Iterative refinement experiments showing whether performance improves across refinement iterations.}
+
+\subsection*{Week 5: ART Integration or Feasibility Analysis}
+
+The fifth week is dedicated to the ART component. The ideal outcome is a minimal ART-based training prototype in which generated policy outputs are evaluated through environment rewards.
+
+\deliverable{A minimal ART prototype}
+
+\subsection*{Week 6: Analysis, Writing, and Finalization}
+
+The final week focuses on producing a research-worthy final output. The report should not merely describe implementation steps; it should interpret the results in relation to the research questions. It should explain when LLM-generated policies are useful, where they fail, whether refinement helps, and whether ART appears promising for future work.
+
+\deliverable{Final research report, cleaned code repository, experiment logs, figures, tables, and conclusions.}
+
+\section{Expected Final Report Structure}
+
+The final report should follow a research-oriented structure:
+
+\begin{enumerate}
+    \item \textbf{Introduction}: motivation, problem statement, and contribution.
+    \item \textbf{Background}: classical RL, LLM-based control, iterative policy refinement, and ART.
+    \item \textbf{Research Questions}: formal statement of the questions and hypotheses.
+    \item \textbf{Methodology}: environments, algorithms, prompting procedure, refinement loop, ART setup, metrics, and reproducibility details.
+    \item \textbf{Results}: baseline results, one-shot LLM results, refinement results, and ART feasibility or performance results.
+    \item \textbf{Discussion}: interpretation, strengths, weaknesses, threats to validity, and relation to the research questions.
+    \item \textbf{Conclusion}: main findings and future research directions.
+\end{enumerate}
+
+\end{document}

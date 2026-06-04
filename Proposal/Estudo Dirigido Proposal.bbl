@@ -1,0 +1,89 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/global//global/global}
+    \entry{carvalhoSensorymotorControlLarge2026}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=7a58a07185e6924b1dc0fc692b216890}{%
+           family={Carvalho},
+           familyi={C\bibinitperiod},
+           given={Jonata\bibnamedelima Tyska},
+           giveni={J\bibinitperiod\bibinitdelim T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a180b0d118438043063fdd0a15f816e1}{%
+           family={Nolfi},
+           familyi={N\bibinitperiod},
+           given={Stefano},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{37561c59a17463f01c452dea68a6db17}
+      \strng{fullhash}{37561c59a17463f01c452dea68a6db17}
+      \strng{bibnamehash}{37561c59a17463f01c452dea68a6db17}
+      \strng{authorbibnamehash}{37561c59a17463f01c452dea68a6db17}
+      \strng{authornamehash}{37561c59a17463f01c452dea68a6db17}
+      \strng{authorfullhash}{37561c59a17463f01c452dea68a6db17}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{We propose a method that enables large language models (LLMs) to control embodied agents through the generation of control policies that directly map continuous observation vectors to continuous action vectors. At the outset, the LLMs generate a control strategy based on a textual description of the agent, its environment, and the intended goal. This strategy is then iteratively refined through a learning process in which the LLMs are repeatedly prompted to improve the current strategy, using performance feedback and sensory-motor data collected during its evaluation. The method is validated on classic control tasks from the Gymnasium library and the inverted pendulum task from the MuJoCo library. The approach proves effective with relatively compact models such as GPT-oss:120b and Qwen2.5:72b. In most cases, it successfully identifies optimal or near-optimal solutions by integrating symbolic knowledge derived through reasoning with sub-symbolic sensory-motor data gathered as the agent interacts with its environment.}
+      \field{issn}{2045-2322}
+      \field{journaltitle}{Scientific Reports}
+      \field{langid}{english}
+      \field{month}{3}
+      \field{title}{Sensory-Motor Control with Large Language Models via Iterative Policy Refinement}
+      \field{urlday}{29}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2026}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.1038/s41598-026-42091-0
+      \endverb
+      \verb{file}
+      \verb C:\Users\jarne\Zotero\storage\XBUXSQ9E\Carvalho en Nolfi - 2026 - Sensory-motor control with large language models via iterative policy refinement.pdf
+      \endverb
+    \endentry
+    \entry{OpenPipeARTAutorl}{misc}{}
+      \field{sortinit}{O}
+      \field{sortinithash}{2cd7140a07aea5341f9e2771efe90aae}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{url}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Agent Reinforcement Trainer: train multi-step agents for real-world tasks using GRPO. Give your agents on-the-job training. Reinforcement learning for Qwen3.5, GPT-OSS, Llama, and more! - OpenPipe/ART}
+      \field{howpublished}{https://github.com/OpenPipe/ART/tree/auto-rl}
+      \field{journaltitle}{GitHub}
+      \field{langid}{english}
+      \field{title}{{{OpenPipe}}/{{ART}} at Auto-Rl}
+      \field{urlday}{29}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb C:\Users\jarne\Zotero\storage\SG3UWVXU\auto-rl.html
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
