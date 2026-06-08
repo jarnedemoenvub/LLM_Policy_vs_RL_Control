@@ -14,7 +14,7 @@ def evaluate_controller(
     controller_fn,
     controller_name,
     env_id="Pendulum-v1",
-    episodes=10,
+    episodes=100,
     seed=42,
 ):
     """
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             controller_fn=controller_fn,
             controller_name=controller_name,
             env_id="Pendulum-v1",
-            episodes=10,
+            episodes=100,
             seed=42,
         )
 
