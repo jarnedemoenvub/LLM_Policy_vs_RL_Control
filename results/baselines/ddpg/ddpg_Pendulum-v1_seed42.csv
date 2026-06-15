@@ -1,0 +1,2 @@
+method,env_id,total_timesteps,mean_reward,std_reward
+DDPG,Pendulum-v1,20000,-153.60158948336496,76.44752616440847
