@@ -8,6 +8,7 @@ sys.path.insert(0, PROJECT_ROOT)
 from stable_baselines3 import DDPG, PPO, SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 import gymnasium as gym
+import config
 
 def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=500_000):
     os.makedirs("results/baselines/ppo", exist_ok=True)
@@ -26,7 +27,7 @@ def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=500_000):
     mean_reward, std_reward = evaluate_policy(
         model,
         env,
-        n_eval_episodes=100,
+        n_eval_episodes=config.N_EVAL_EPISODES,
         deterministic=True,
     )
 
@@ -75,7 +76,7 @@ def train_sac(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
     mean_reward, std_reward = evaluate_policy(
         model,
         env,
-        n_eval_episodes=100,
+        n_eval_episodes=config.N_EVAL_EPISODES,
         deterministic=True,
     )
 
@@ -124,7 +125,7 @@ def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
     mean_reward, std_reward = evaluate_policy(
         model,
         env,
-        n_eval_episodes=100,
+        n_eval_episodes=config.N_EVAL_EPISODES,
         deterministic=True
     )
 
@@ -157,6 +158,6 @@ def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
 
 
 if __name__ == "__main__":
-    train_ppo()
-    train_sac()
-    train_ddpg()
+    train_ppo(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.PPO_TIMESTEPS)
+    train_sac(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.SAC_TIMESTEPS)
+    train_ddpg(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.DDPG_TIMESTEPS)

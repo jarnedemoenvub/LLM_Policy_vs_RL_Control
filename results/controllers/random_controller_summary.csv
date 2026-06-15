@@ -1,2 +1,2 @@
 controller_name,env_id,episodes,seed,mean_reward,std_reward,min_reward,max_reward
-random_controller,Pendulum-v1,100,42,-1248.1949043915304,271.6247492995783,-1858.7736712308663,-778.4087015393822
+random_controller,Pendulum-v1,100,42,-1239.406824806774,293.89369458615056,-1804.1443432644387,-692.2359034503792

@@ -1,4 +1,4 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article} 
 
 % Page layout
 \usepackage[margin=2.5cm]{geometry}
@@ -78,7 +78,7 @@ Here, $u$ is the torque applied to the pendulum. The value of $u$ is clipped to 
 
 \subsubsection{PPO Baseline}
 
-Proximal Policy Optimization, or PPO, is a policy-gradient reinforcement learning algorithm. It learns a parameterized policy $\pi_{\theta}(a \mid s)$, where $s$ is the current state, $a$ is the selected action, and $\theta$ represents the parameters of the neural network policy. During training, the agent interacts with the environment, collects trajectories, estimates which actions were better or worse than expected, and updates the policy.
+Proximal Policy Optimization, or PPO, is a policy-gradient reinforcement learning algorithm introduced by Schulman et al.~\cite{schulman2017ppo}. It learns a parameterized policy $\pi_{\theta}(a \mid s)$, where $s$ is the current state, $a$ is the selected action, and $\theta$ represents the parameters of the neural network policy. During training, the agent interacts with the environment, collects trajectories, estimates which actions were better or worse than expected, and updates the policy.
 
 The main idea behind PPO is to improve the policy without making updates that are too large. Large policy updates can make training unstable. PPO therefore compares the probability of an action under the new policy with the probability of the same action under the old policy. This probability ratio is defined as
 
@@ -113,13 +113,9 @@ Here, $\hat{A}_t$ is the estimated advantage and $\epsilon$ is the clipping para
 
 The first reinforcement learning baseline was trained using Proximal Policy Optimization, implemented with Stable-Baselines3. PPO was included to check whether the pipeline can compare fixed controllers with a learned policy.
 
-In the Week 1 code, PPO was trained on \texttt{Pendulum-v1} for $100{,}000$ timesteps using mostly the default Stable-Baselines3 PPO settings. The policy architecture was \texttt{MlpPolicy}, which is also used in the reported Stable-Baselines3 RL-Zoo setup. The difference with the reported RL-Zoo result is mainly due to the training setup rather than the policy architecture. Both setups use \texttt{MlpPolicy}, but the Week 1 run used a single \texttt{gym.make} environment and mostly default PPO hyperparameters, while the RL-Zoo configuration uses tuned hyperparameters, vectorized environments, and generalized State Dependent Exploration. Exact reproduction of the RL-Zoo result would require matching the full RL-Zoo training setup, including wrappers, vectorized environments, hyperparameters, library versions, and evaluation protocol. This is not the main objective of the current project. Instead, the main purpose of PPO in this project is to provide a trained reinforcement learning baseline against which LLM-generated and iteratively refined controllers can be compared. Therefore, the most important requirement is that PPO is trained and evaluated consistently within the same experimental pipeline as the other methods.
-
 \subsection{Evaluation Setup}
 
-The random and manual controllers were evaluated on \texttt{Pendulum-v1} for $10$ episodes using seed $42$. The PPO model was trained for $100{,}000$ timesteps and evaluated for $10$ episodes. This means that the PPO result should be interpreted as a preliminary baseline test, not as a final comparison.
-
-The reported metric is the mean cumulative reward over the evaluation episodes. Since rewards in \texttt{Pendulum-v1} are negative, higher values are better.
+The random and manual controllers were evaluated on \texttt{Pendulum-v1} for $100$ episodes using seed $42$. The PPO model was trained for $500{,}000$ timesteps and also evaluated for $100$ episodes.  The reported metric is the mean cumulative reward over the evaluation episodes. Since rewards in \texttt{Pendulum-v1} are negative, higher values are better.
 
 \subsection{Results}
 
@@ -133,16 +129,14 @@ Table~\ref{tab:week1_results} shows the Week 1 results.
 \hline
 Method & Episodes & Mean reward & Std. reward & Training \\
 \hline
-Random controller & $10$ & $-1248.195$ & $271.625$ & No \\
-Manual controller & $10$ & $-1180.920$ & $234.175$ & No \\
-PPO baseline & $10$ & $-1075.093$ & $206.479$ & Yes \\
+Random controller & $100$ & $-1239.407$ & $293.894$ & No \\
+Manual controller & $100$ & $-1180.920$ & $234.175$ & No \\
+PPO baseline & $100$ & $-182.502$ & $107.747$ & Yes \\
 \hline
 \end{tabular}
 \end{table}
 
-The manual controller performed better than the random controller. The improvement in mean reward shows that the manually defined rule uses some useful information from the state. However, the improvement is limited.
-
-The PPO baseline obtained a mean reward of $-1075.093$. This is better than both fixed controllers, but the difference is not as large as expected for a well-trained PPO agent on \texttt{Pendulum-v1}. The current ranking is therefore
+The manual controller performed better than the random controller. The improvement in mean reward shows that the manually defined rule uses some useful information from the state. However, the improvement is limited. The PPO baseline obtained a mean reward of $-182.502$, which is substantially better than both fixed controllers. The current ranking is therefore
 
 \[
 \text{PPO} > \text{Manual controller} > \text{Random controller}.
@@ -150,53 +144,122 @@ The PPO baseline obtained a mean reward of $-1075.093$. This is better than both
 
 \subsection{Comparison with Reported PPO Results}
 
-The Stable-Baselines3 RL-Zoo model for PPO on \texttt{Pendulum-v1} reports a reward of approximately $-230.42 \pm 142.54$. My PPO result was $-1075.093 \pm 206.479$, which is much worse.
+To put the obtained PPO result into context, I compared it with a publicly available Stable-Baselines3 PPO model for \texttt{Pendulum-v1} hosted on Hugging Face~\cite{sb3ppo}. The reported result for that model is a mean reward of $-230.423$ with a standard deviation of $142.539$, evaluated deterministically over $10$ episodes.
 
-This difference does not necessarily mean that the implementation is broken, but it does mean that my PPO result is not directly comparable with the reported RL-Zoo result. The main reason is that the Week 1 PPO code did not reproduce the RL-Zoo setup. It used a simple \texttt{gym.make} environment, default Stable-Baselines3 PPO hyperparameters, one environment, and only $10$ evaluation episodes. The RL-Zoo result, on the other hand, uses a tuned training configuration for \texttt{Pendulum-v1}, including specific hyperparameters, vectorized environments, and generalized State Dependent Exploration.
-
-For this reason, the literature comparison should be interpreted carefully. The correct conclusion is not that PPO performs poorly in general, but that the current Week 1 PPO setup is only a first pipeline test. It confirms that PPO can be trained and evaluated in the project code, but it does not reproduce the expected Stable-Baselines3 RL-Zoo performance.
+In my pipeline, the PPO baseline obtained a mean reward of $-182.502$ with a standard deviation of $107.747$. This is better than the reported Stable-Baselines3 result, since rewards in \texttt{Pendulum-v1} are negative and values closer to zero indicate better performance.
 
 \subsection{Discussion}
 
-The Week 1 pipeline provides three useful reference points. The random controller gives a lower baseline. The manual controller shows what can be achieved with a simple hand-written control rule. PPO shows that a learned policy can already improve over both fixed controllers, even though the current PPO setup is still weak compared to the reported RL-Zoo result.
+The Week 1 results show that the experimental pipeline is functioning correctly. The random controller provides a useful lower baseline because it does not use the state and simply samples arbitrary actions. Its poor mean reward confirms that \texttt{Pendulum-v1} cannot be solved well by uncontrolled torque selection. The manual controller performs slightly better, indicating that even a simple rule based on angle and angular velocity can leverage meaningful information from the environment. However, the improvement over random control is relatively small. This suggests that manually designing a good controller is not trivial, even in a simple environment.
 
-This is useful for the next phase of the project. An LLM-generated controller should first be compared against the random and manual controllers. If it performs close to random, it is not useful. If it performs close to or better than the manual controller, it shows that the LLM can generate a meaningful control rule. PPO should eventually serve as a stronger trained baseline.
+The PPO baseline performs substantially better than both fixed controllers. This is expected because PPO can improve its policy through interaction with the environment, while the random and manual controllers remain fixed. The large gap between PPO and the manual controller also illustrates why reinforcement learning is a strong baseline for embodied-control tasks. Instead of relying on a manually chosen formula, PPO can adapt the policy parameters based on reward feedback. The comparison with the reported Stable-Baselines3 PPO result further supports this conclusion, where my PPO baseline performs better in this specific comparison. Nevertheless, the evaluation settings are not identical: the reported result uses $10$ evaluation episodes, while my result uses $100$ episodes. Because of this, the comparison should be treated as evidence that the implementation is reasonable and competitive, not as a definitive claim that my trained model is superior.
 
-\subsection{Limitations}
+At the same time, the results show why comparing with LLM-based policy generation will be interesting. A manually written controller is easy to interpret, but its performance is limited. PPO gives much better performance, but the learned policy is less transparent because it is represented by neural network parameters. LLM-generated controllers may offer a different trade-off: they could produce readable control logic while still using more task knowledge than a very simple hand-written rule. Therefore, the next experiments should not only compare rewards but also consider factors such as interpretability, ease of modification, and the amount of human intervention needed.
 
-The Week 1 results are preliminary. The main limitations are:
-
-\begin{itemize}
-    \item only one environment was used;
-    \item only one seed was used;
-    \item the PPO setup did not match the RL-Zoo configuration;
-    \item PPO was evaluated over only $10$ episodes;
-    \item the fixed controllers and PPO did not use exactly the same evaluation protocol;
-    \item the PPO logging did not initially include all reproducibility details;
-    \item SAC and DDPG were not included in the Week 1 report;
-    \item no LLM-generated controller has been evaluated yet.
-\end{itemize}
+Overall, Week 1 successfully establishes the basic structure needed for the project. The environment can be created, controllers evaluated, PPO trained, and results stored and compared. This creates a foundation for the next phase, where LLM-based policy generation can be added to the same evaluation pipeline.
 
 \subsection{Conclusion}
 
-Week 1 established a working experimental setup. I can now create a Gymnasium environment, evaluate fixed controllers, train a PPO baseline, and save results. The manual controller improved over the random controller, and PPO improved over both fixed controllers.
+In Week 1, I implemented and evaluated a first control pipeline for \texttt{Pendulum-v1}. The pipeline includes a random controller, a simple manually defined controller, and a PPO reinforcement learning baseline. The results show a clear performance ranking: PPO performs best, followed by the manual controller, while the random controller performs worst.
 
-However, the PPO result is still far from the reported Stable-Baselines3 RL-Zoo result for the same environment. This is expected because the Week 1 PPO code did not reproduce the RL-Zoo setup. The next step is to improve the PPO baseline by using the correct RL-Zoo-style hyperparameters, logging all evaluation details, and evaluating PPO with the same protocol as the other methods.
+The main technical outcome is that the pipeline is working end-to-end. I can now evaluate fixed controllers, train a reinforcement learning agent, compute mean and standard deviation over multiple episodes, and compare the results in a structured way. This is an important first step because future LLM-generated controllers can be evaluated using the same setup.
 
-\subsection{Next Steps}
+The results also clarify the role of the different baselines. The random controller serves as a lower bound, the manual controller represents a simple interpretable policy, and PPO represents a strong learned reinforcement learning baseline. 
 
-The next steps are:
+\section{Week 2: Reinforcement Learning Baselines and Reproducibility}
 
-\begin{enumerate}
-    \item Fix PPO logging so that the CSV includes the number of evaluation episodes, hyperparameters, number of environments, and model path.
-    \item Re-run PPO using the Stable-Baselines3 RL-Zoo configuration as closely as possible.
-    \item Evaluate PPO with the same number of episodes as the fixed controllers.
-    \item Train SAC and DDPG as additional RL baselines in a later week.
-    \item Generate a first LLM-based controller for \texttt{Pendulum-v1}.
-    \item Evaluate the LLM-generated controller against the random, manual, and PPO baselines.
-\end{enumerate}
+\subsection{Goal of the Week}
+
+The goal of Week 2 was to extend the initial reinforcement learning pipeline by implementing or configuring three reinforcement learning baselines: PPO, SAC, and DDPG. In Week 1, PPO was already implemented and evaluated on \texttt{Pendulum-v1}. In Week 2, the focus was therefore on adding SAC and DDPG, running initial experiments on the same simple continuous-control environment, defining reward thresholds, and verifying that experiments can be reproduced using fixed seeds.
+
+\subsection{Implemented Reinforcement Learning Baselines}
+
+Three reinforcement learning algorithms are now part of the baseline pipeline: PPO, SAC, and DDPG. These methods were selected because they are commonly used for continuous-control problems and can be applied directly to environments with continuous action spaces such as \texttt{Pendulum-v1}.
+
+PPO was already used in Week 1 as the first learned reinforcement learning baseline. It is an on-policy algorithm that updates the policy using recently collected trajectories and controls the size of policy updates through a clipped objective. This makes it a stable and widely used baseline for reinforcement learning experiments.
+
+Soft Actor-Critic, or SAC, was added as a second baseline. SAC is an off-policy actor-critic algorithm based on the maximum entropy reinforcement learning framework~\cite{haarnoja2018sac}. In addition to maximizing the expected return, SAC also maximizes the entropy of the policy. This encourages exploration because the policy is rewarded for remaining sufficiently stochastic during training. This can be useful in continuous-control tasks, where poor exploration may prevent the agent from discovering better actions.
+
+Deep Deterministic Policy Gradient, or DDPG, was added as a third baseline. DDPG is an off-policy actor-critic algorithm for continuous action spaces~\cite{spinningupddpg}. It learns both a Q-function and a deterministic policy. The Q-function estimates the quality of state-action pairs, while the policy learns to output the continuous action that maximizes the Q-function. DDPG is relevant for this project because it is designed for continuous action spaces, but it can also be more sensitive to hyperparameters and exploration noise than newer algorithms such as SAC.
+
+
+\subsection{Experimental Setup}
+
+All Week 2 experiments were run on \texttt{Pendulum-v1}. This keeps the comparison consistent with Week 1 and makes it easier to verify whether the different reinforcement learning baselines behave as expected on a simple continuous-control task.
+
+The PPO result is taken from the Week 1 experiment, where PPO was trained for $500{,}000$ timesteps and evaluated for $100$ episodes. SAC and DDPG were trained for $20{,}000$ timesteps as initial experiments. The same evaluation principle was used: the reported metric is the mean cumulative reward, together with the standard deviation. Since rewards in \texttt{Pendulum-v1} are negative, values closer to zero indicate better performance.
+
+To support reproducibility, fixed seeds were used in the experimental pipeline. This is important because reinforcement learning results can vary due to random initialization, environment randomness, exploration behavior, and stochastic training updates. Using fixed seeds makes it easier to debug the pipeline and to check whether repeated runs produce comparable results.
+
+\subsection{Reward Thresholds}
+
+To interpret the results more clearly, I defined simple reward thresholds for \texttt{Pendulum-v1}. These thresholds are not official success criteria, but they provide a practical way to classify the quality of the learned policies during the project.
+
+\begin{itemize}
+    \item Mean reward below $-1000$: poor performance. The controller is close to random or does not solve the task meaningfully.
+    \item Mean reward between $-1000$ and $-500$: limited performance. The controller shows some improvement but is still far from a good policy.
+    \item Mean reward between $-500$ and $-250$: reasonable performance. The controller has learned useful behavior, but there is still room for improvement.
+    \item Mean reward above $-250$: strong performance. The controller performs well on the task.
+\end{itemize}
+
+Using these thresholds, the random and manual controllers from Week 1 are classified as poor, while PPO, SAC, and DDPG all reach the strong-performance range.
+
+\subsection{Results}
+
+Table~\ref{tab:week2_rl_results} shows the current reinforcement learning baseline results on \texttt{Pendulum-v1}.
+
+\begin{table}[h]
+\centering
+\caption{Week 2 reinforcement learning baseline results on \texttt{Pendulum-v1}. Higher reward is better.}
+\label{tab:week2_rl_results}
+\begin{tabular}{|l|r|r|r|}
+\hline
+Method & Total timesteps & Mean reward & Std. reward \\
+\hline
+PPO & $500{,}000$ & $-182.502$ & $107.747$ \\
+SAC & $20{,}000$ & $-149.033$ & $73.988$ \\
+DDPG & $20{,}000$ & $-153.602$ & $76.448$ \\
+\hline
+\end{tabular}
+\end{table}
+
+The results show that all three reinforcement learning baselines perform much better than the random and manual controllers from Week 1. SAC obtained the best mean reward, with a score of $-149.033$. DDPG followed closely with a mean reward of $-153.602$. PPO obtained a mean reward of $-182.502$.
+
+The current ranking among the reinforcement learning baselines is therefore
+
+\[
+\text{SAC} > \text{DDPG} > \text{PPO}.
+\]
+
+However, this ranking should be interpreted carefully because the training budgets are not identical. PPO was trained for $500{,}000$ timesteps, while SAC and DDPG were trained for $20{,}000$ timesteps. Therefore, the table is useful as an initial comparison of working baselines, but it is not yet a fully controlled benchmark. A more rigorous comparison should train all algorithms under the same budget and preferably repeat each experiment over multiple seeds.
+
+\subsection{Discussion}
+
+The Week 2 results show that the reinforcement learning baseline pipeline has been successfully extended beyond PPO. Both SAC and DDPG were configured and trained on the same environment, and both obtained strong results according to the defined reward thresholds. This is an important step because the project now has multiple learned baselines instead of relying on a single reinforcement learning method.
+
+SAC achieved the best result in the current experiments. This is plausible because SAC is often strong in continuous-control tasks due to its off-policy learning and entropy-based exploration. The entropy term encourages the agent to explore different actions during training, which can help it discover better control behavior for the pendulum. In this experiment, SAC reached a mean reward of $-149.033$, which is the best result obtained so far.
+
+DDPG also performed well, with a mean reward of $-153.602$. Its performance is close to SAC in this initial experiment. This shows that a deterministic actor-critic approach can also learn a useful policy for \texttt{Pendulum-v1}. However, DDPG is generally more sensitive to exploration noise and hyperparameter settings. For this reason, its stability should be tested further with repeated runs and different seeds.
+
+PPO remains a useful baseline, even though it did not obtain the best mean reward in this comparison. PPO is stable and simple to use, and it was already shown in Week 1 to perform much better than the random and manual controllers. The current comparison mainly shows that SAC and DDPG can also be successfully integrated into the pipeline and can reach competitive or better performance on the same task.
+
+The main limitation of the Week 2 comparison is that the training budgets are different. PPO was trained for many more timesteps than SAC and DDPG, so the results should not be interpreted as a definitive algorithm ranking. Instead, Week 2 should be seen as an implementation and verification phase. The key outcome is that PPO, SAC, and DDPG all run correctly, produce meaningful results, and can be evaluated using the same pipeline.
+
+\subsection{Conclusion}
+
+In Week 2, I extended the experimental pipeline by adding SAC and DDPG alongside the PPO baseline from Week 1. All three reinforcement learning algorithms were evaluated on \texttt{Pendulum-v1}. The results show that SAC, DDPG, and PPO all achieve strong performance according to the defined reward thresholds.
+
+The best result in the current experiments was obtained by SAC, followed closely by DDPG. PPO also remained clearly stronger than the fixed random and manual controllers from Week 1. These results confirm that the reinforcement learning part of the project is functioning correctly and that the pipeline can support multiple baseline algorithms.
+
+The main next step is to make the comparison more systematic. Future experiments should use equal training budgets for PPO, SAC, and DDPG, evaluate each method over multiple seeds, and then compare the algorithms more fairly. After that, LLM-generated controllers can be added to the same evaluation setup and compared against these reinforcement learning baselines.
 
 \begin{thebibliography}{9}
+
+\bibitem{haarnoja2018sac}
+Haarnoja, T., Zhou, A., Abbeel, P., and Levine, S. Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor. arXiv preprint arXiv:1801.01290, 2018.
+
+\bibitem{spinningupddpg}
+OpenAI Spinning Up. Deep Deterministic Policy Gradient. Available at: \url{https://spinningup.openai.com/en/latest/algorithms/ddpg.html}.
 
 \bibitem{schulman2017ppo}
 Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O. Proximal Policy Optimization Algorithms. arXiv preprint arXiv:1707.06347, 2017.

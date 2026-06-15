@@ -2,20 +2,21 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+import gymnasium as gym
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from src.envs.make_env import make_env
 from src.llm_policy.controller_template import controller, random_controller
+import config
 
 
 def evaluate_controller(
     controller_fn,
     controller_name,
     env_id="Pendulum-v1",
-    episodes=100,
-    seed=42,
+    episodes= config.N_EVAL_EPISODES,
+    seed= config.SEED,
 ):
     """
     Evaluate a controller function on a Gymnasium environment.
@@ -25,7 +26,7 @@ def evaluate_controller(
     episode_rewards = []
 
     for episode in range(episodes):
-        env = make_env(env_id)
+        env = gym.make(env_id)
         obs, info = env.reset(seed=seed + episode)
 
         done = False
@@ -100,8 +101,8 @@ if __name__ == "__main__":
             controller_fn=controller_fn,
             controller_name=controller_name,
             env_id="Pendulum-v1",
-            episodes=100,
-            seed=42,
+            episodes=config.N_EVAL_EPISODES,
+            seed=config.SEED,
         )
 
         save_controller_results(
