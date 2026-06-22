@@ -10,7 +10,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 import gymnasium as gym
 import config
 
-def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=500_000):
+def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=100_000):
     os.makedirs("results/baselines/ppo", exist_ok=True)
 
     env = gym.make(env_id)
@@ -19,7 +19,7 @@ def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=500_000):
         policy="MlpPolicy",
         env=env,
         seed=seed,
-        device="cuda"
+        device=config.DEVICE
     )
 
     model.learn(total_timesteps=total_timesteps)
@@ -59,7 +59,7 @@ def train_ppo(env_id="Pendulum-v1", seed=42, total_timesteps=500_000):
     print(f"Saved results to: {csv_path}")
 
 
-def train_sac(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
+def train_sac(env_id="Pendulum-v1", seed=42, total_timesteps=100_000):
     os.makedirs("results/baselines/sac", exist_ok=True)
 
     env = gym.make(env_id)
@@ -68,7 +68,7 @@ def train_sac(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
         policy="MlpPolicy",
         env=env,
         seed=seed,
-        device="cuda"
+        device=config.DEVICE
     )
 
     model.learn(total_timesteps=total_timesteps)
@@ -108,7 +108,7 @@ def train_sac(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
     print(f"Saved results to: {csv_path}")
 
 
-def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
+def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=100_000):
     os.makedirs("results/baselines/ddpg", exist_ok=True)
 
     env = gym.make(env_id)
@@ -117,7 +117,7 @@ def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
         policy="MlpPolicy",
         env=env,
         seed=seed,
-        device="cuda"
+        device=config.DEVICE
     )
 
     model.learn(total_timesteps=total_timesteps)
@@ -158,6 +158,8 @@ def train_ddpg(env_id="Pendulum-v1", seed=42, total_timesteps=20_000):
 
 
 if __name__ == "__main__":
-    train_ppo(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.PPO_TIMESTEPS)
-    train_sac(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.SAC_TIMESTEPS)
-    train_ddpg(env_id="Pendulum-v1", seed=config.SEED, total_timesteps=config.DDPG_TIMESTEPS)
+    for i in range(config.N_RUNS):
+        seed = config.SEED + i
+        train_ppo(env_id="Pendulum-v1", seed=seed, total_timesteps=config.PPO_TIMESTEPS)
+        train_sac(env_id="Pendulum-v1", seed=seed, total_timesteps=config.SAC_TIMESTEPS)
+        train_ddpg(env_id="Pendulum-v1", seed=seed, total_timesteps=config.DDPG_TIMESTEPS)

@@ -1,0 +1,43 @@
+{
+  "env_id": "Pendulum-v1",
+  "n_episodes": 10,
+  "seed": 44,
+  "mean_reward": -1286.7572387004718,
+  "std_reward": 179.07310856966416,
+  "min_reward": -1519.3317081936143,
+  "max_reward": -1079.7399791007606,
+  "episode_rewards": [
+    -1519.3317081936143,
+    -1079.7399791007606,
+    -1501.5381735235353,
+    -1174.1838723109777,
+    -1117.8508474474681,
+    -1141.085392887402,
+    -1211.0120283789638,
+    -1491.5733306194636,
+    -1134.220957087012,
+    -1497.0360974555197
+  ],
+  "episode_lengths": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "total_env_steps": 2000,
+  "n_failures": 0,
+  "failures": [],
+  "run_id": "one_shot_Pendulum-v1_llama3.1_8b_temp0.4_attempt2_20260622_154557",
+  "model": "llama3.1:8b",
+  "temperature": 0.4,
+  "attempt_idx": 2,
+  "policy_path": "/home/jarnedemoen/Documents/LLM_Policy_vs_RL_Control/results/llm_one_shot/pendulum/policies/one_shot_Pendulum-v1_llama3.1_8b_temp0.4_attempt2_20260622_154557_policy.py",
+  "trace_path": "/home/jarnedemoen/Documents/LLM_Policy_vs_RL_Control/results/llm_one_shot/pendulum/sensory_motor_traces/one_shot_Pendulum-v1_llama3.1_8b_temp0.4_attempt2_20260622_154557_trace.jsonl",
+  "status": "valid"
+}
