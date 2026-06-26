@@ -32,7 +32,7 @@
 
 \maketitle
 
-\section*{Week 1: Initial Pipeline and Baseline Evaluation}
+\section{Week 1: Initial Pipeline and Baseline Evaluation}
 
 \subsection{Goal of the Week}
 
@@ -161,7 +161,7 @@ In Week 1, I implemented and evaluated a first control pipeline for \texttt{Pend
 The main technical outcome is that the pipeline is working end-to-end. I can now evaluate fixed controllers, train a reinforcement learning agent, compute mean and standard deviation over multiple episodes, and compare the results in a structured way. This is an important first step because future LLM-generated controllers can be evaluated using the same setup.
 The results also clarify the role of the different baselines. The random controller serves as a lower bound, the manual controller represents a simple interpretable policy, and PPO represents a strong learned reinforcement learning baseline. 
 
-\section*{Week 2: Reinforcement Learning Baselines and Reproducibility}
+\section{Week 2: Reinforcement Learning Baselines and Reproducibility}
 
 \subsection{Goal of the Week}
 
@@ -303,7 +303,7 @@ The best result in the current experiments was obtained by SAC, followed closely
 
 The main next step is to make the comparison more systematic. Future experiments should use equal training budgets for PPO, SAC, and DDPG, evaluate each method over multiple seeds, and then compare the algorithms more fairly. After that, LLM-generated controllers can be added to the same evaluation setup and compared against these reinforcement learning baselines.
 
-\section*{Week 3: One-Shot LLM Controller Generation}
+\section{Week 3: One-Shot LLM Controller Generation}
 
 \subsection{Goal of the Week}
 
