@@ -107,6 +107,10 @@ Requirements:
 
 Very important: You must define theta before using it: theta = math.atan2(sin_theta, cos_theta)
 - Never use a variable before assigning it.
+Prefer simple continuous control formulas over many IF-THEN branches.
+The improved policy should make a meaningful change to the torque formula, not only small threshold changes.
+The policy should use theta_dot in most cases, because angular velocity is important for damping and swing-up.
+If the current policy performs poorly, consider changing the sign or strength of the main torque formula.
 
 Example required format:
 
@@ -125,3 +129,112 @@ def policy(obs):
     torque = max(-2.0, min(2.0, torque))
 
     return [float(torque)]"""
+
+def prompt_4_refine_policy(
+    current_policy_code: str,
+    current_mean_reward: float,
+    current_std_reward: float,
+    best_policy_code: str,
+    best_mean_reward: float,
+    sensory_motor_summary: str,
+    previous_policy_code: str | None = None,
+    previous_mean_reward: float | None = None,
+) -> str:
+    previous_section = ""
+
+    if previous_policy_code is not None and previous_mean_reward is not None:
+        previous_section = f"""
+Previous policy:
+
+{previous_policy_code}
+
+Previous policy mean reward:
+{previous_mean_reward:.3f}
+"""
+
+    return f"""
+{PENDULUM_TASK_DESCRIPTION}
+
+Prompt 4: Formula-focused iterative policy refinement
+
+You previously generated a Python controller for Pendulum-v1. The controller was evaluated in the environment.
+
+Your task is to generate a meaningfully improved controller.
+
+Important context:
+- Higher reward is better.
+- Pendulum rewards are negative.
+- A good policy obtains rewards closer to zero.
+- The current policy performs poorly.
+- Small threshold changes are not enough.
+- You must change the main torque equation.
+
+Current policy:
+
+{current_policy_code}
+
+Current policy mean reward:
+{current_mean_reward:.3f}
+
+Current policy standard deviation:
+{current_std_reward:.3f}
+
+{previous_section}
+
+Best policy so far:
+
+{best_policy_code}
+
+Best policy mean reward so far:
+{best_mean_reward:.3f}
+
+Sensory-motor data from the current policy evaluation:
+
+{sensory_motor_summary}
+
+Important instruction:
+The previous policies relied too much on IF-THEN threshold rules. This led to weak performance.
+For this refinement, do not merely change thresholds such as pi/3, pi/4, or theta_dot limits.
+
+Generate a smooth continuous controller using theta and theta_dot.
+
+You should consider changing:
+- the sign of the theta term;
+- the sign of the theta_dot term;
+- the strength of the angle correction;
+- the strength of the velocity damping;
+- whether to use theta, sin(theta), cos(theta), or combinations of them.
+
+Good candidate structures include formulas such as:
+
+torque = Kp * theta + Kd * theta_dot
+torque = -Kp * theta - Kd * theta_dot
+torque = K1 * math.sin(theta) + K2 * theta_dot
+torque = -K1 * math.sin(theta) - K2 * theta_dot
+torque = K1 * math.sin(theta) + K2 * theta_dot + K3 * math.sin(theta) * abs(theta_dot)
+
+Choose the signs and coefficients based on the reward and sensory-motor data.
+
+Hard constraints:
+- Do not create many IF-THEN branches.
+- Do not only change threshold values.
+- The only IF statements should be for optional clipping or very simple safety handling.
+- The policy must use theta_dot in the main torque formula.
+- The policy must return one torque value in [-2.0, 2.0].
+
+Requirements:
+- Return only one Python code block.
+- Define exactly one function named policy.
+- The function signature must be: def policy(obs):
+- The function must return a list containing one float: [torque]
+- You may use only the math module and basic Python operations.
+- Do not import os, sys, subprocess, pathlib, socket, requests, shutil, or any unsafe library.
+- Do not read or write files.
+- Do not use input(), eval(), exec(), compile(), open(), globals(), locals(), or __import__().
+- You must define theta before using it:
+  theta = math.atan2(sin_theta, cos_theta)
+- Never use a variable before assigning it.
+- The policy function must work independently when called with any valid observation.
+
+Return only the improved Python code block.
+"""
