@@ -17,10 +17,6 @@ from art.utils.litellm import convert_litellm_choice_to_openai
 from litellm import acompletion
 
 
-# ---------------------------------------------------------------------
-# Project paths
-# ---------------------------------------------------------------------
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 RESULTS_DIR = PROJECT_ROOT / "results" / "art_pendulum"
@@ -34,15 +30,9 @@ POLICIES_DIR.mkdir(parents=True, exist_ok=True)
 EVAL_LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ---------------------------------------------------------------------
-# ART / model config
-# ---------------------------------------------------------------------
-
 PROJECT_NAME = "llm-policy-vs-rl-control"
 MODEL_NAME = "art-pendulum-kp-kd-001"
 
-# I will keep this small for local hardware.
-# If this is too heavy, I will try Qwen/Qwen2.5-0.5B-Instruct.
 BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 
 MAX_SEQ_LENGTH = 512
@@ -97,14 +87,7 @@ Return only JSON.
 """
 
 
-# ---------------------------------------------------------------------
-# Utility functions
-# ---------------------------------------------------------------------
-
 def extract_json_object(text: str) -> dict[str, float]:
-    """
-    Extracts {"Kp": ..., "Kd": ...} from model text.
-    """
     text = text.strip()
 
     # First try direct JSON.
@@ -222,16 +205,7 @@ def evaluate_kp_kd(
 
 
 def normalize_reward(mean_reward: float) -> float:
-    """
-    Converts Pendulum reward to a rough bounded ART reward.
 
-    Bad policies can be around -1600 or worse.
-    Good policies are closer to 0.
-
-    This maps roughly:
-    -1600 -> 0
-    0     -> 1
-    """
     return float(max(0.0, min(1.0, (mean_reward + 1600.0) / 1600.0)))
 
 
@@ -248,19 +222,8 @@ def save_policy_params(path: Path, kp: float, kd: float) -> None:
         encoding="utf-8",
     )
 
-
-# ---------------------------------------------------------------------
-# ART rollout
-# ---------------------------------------------------------------------
-
 async def rollout(model: art.Model, step: int, group_id: int, rollout_id: int) -> art.Trajectory:
-    """
-    One rollout:
-    - Ask ART model for Kp/Kd.
-    - Evaluate resulting controller in Pendulum.
-    - Store reward in trajectory.
-    """
-
+ 
     traj = art.Trajectory(
         reward=0.0,
         messages_and_choices=[],
@@ -343,11 +306,6 @@ async def rollout(model: art.Model, step: int, group_id: int, rollout_id: int) -
         )
 
     return traj
-
-
-# ---------------------------------------------------------------------
-# Training
-# ---------------------------------------------------------------------
 
 async def main() -> None:
     print("=" * 80)
@@ -447,10 +405,6 @@ async def main() -> None:
         print(f"Completed ART training step {step}")
 
     print("\nART training completed.")
-
-    # -----------------------------------------------------------------
-    # Select best rollout and evaluate over 100 episodes.
-    # -----------------------------------------------------------------
 
     rollouts_df = pd.DataFrame(all_rows)
     valid_df = rollouts_df[rollouts_df["valid"] == True].copy()
