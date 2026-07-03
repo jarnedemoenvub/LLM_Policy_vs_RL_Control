@@ -8,3 +8,17 @@ pyyaml
 tqdm
 openai
 python-dotenv
+# openpipe-art 
+# litellm 
+# polars
+# wandb
+# transformers
+# nest_asyncio
+# setproctitle
+# tblib
+# torchtune
+# torchvision
+# torchao
+# vllm==0.10.0
+# peft
+# trl

@@ -447,6 +447,136 @@ In Week 3, I implemented the first LLM-based controller generation pipeline. The
 The main outcome is that the one-shot LLM pipeline works technically. Generated controllers can be executed and evaluated without manual rewriting. The best valid one-shot policy achieved a mean reward of $-1105.627$, which is far weaker than the reinforcement learning baselines. Therefore, one-shot LLM policy generation with the local \texttt{llama3.1:8b} model is not sufficient to solve the task well.
 
 The next step is to implement iterative policy refinement. In this phase, the LLM will receive the current policy, the best policy so far, reward scores, and sensory-motor data from evaluation. This should test whether feedback-based prompting can improve the generated policies beyond the initial one-shot results.
+
+\section{Week 4: Iterative LLM Policy Refinement}
+
+\subsection{Goal of the Week}
+
+The goal of Week 4 was to extend the one-shot LLM controller pipeline from Week 3 with iterative policy refinement. In Week 3, the LLM generated a controller only once, based only on a textual description of the environment and task. The resulting one-shot policies were executable, but their performance was weak compared with the reinforcement learning baselines.
+
+In Week 4, the objective was to implement the second phase of the method proposed by Carvalho and Nolfi~\cite{carvalho2026}. In this phase, the LLM is not only asked to generate an initial controller, but is repeatedly prompted to improve the current controller using feedback from previous evaluations. The refinement prompt includes the current policy, the best policy found so far, reward scores, and sensory-motor data collected during evaluation.
+
+The expected outcome of the week was therefore a working iterative refinement loop that can generate improved policies, evaluate each refinement iteration, store all intermediate policies and logs, and compare one-shot and refined controllers.
+
+\subsection{Implemented Refinement Pipeline}
+
+The iterative refinement pipeline builds directly on the one-shot controller generation pipeline from Week 3. The one-shot pipeline already stores the generated policy code, the reward statistics, and the sensory-motor traces. These stored files are used as input for the refinement loop.
+
+The refinement pipeline performs the following steps:
+
+\begin{enumerate}
+\item Select the best valid one-shot policy for a given LLM model.
+\item Load the policy code and its evaluation trace.
+\item Extract the final sensory-motor steps from the trace.
+\item Construct a refinement prompt using the best policy found so far as the main reference policy, together with reward scores and sensory-motor data.
+\item Ask the LLM to generate an improved Python controller.
+\item Extract and save the new generated policy.
+\item Execute the policy using the same safety checks as in Week 3.
+\item Evaluate the new policy in \texttt{Pendulum-v1}.
+\item Update the best policy only if the new policy obtains a higher reward.
+\item If the new policy is worse, keep the previous best policy as the reference for the next iteration.
+\item Repeat the process for multiple refinement iterations.
+\end{enumerate}
+
+The refinement loop was implemented so that every generated policy, prompt, response, evaluation log, and sensory-motor trace is stored separately. This makes it possible to inspect how the generated controllers change over time and whether the LLM makes meaningful policy modifications.
+
+\subsection{Refinement Prompt Design}
+
+The first refinement prompt followed the general idea of Carvalho and Nolfi: the LLM received the current policy, the previous and best policies when available, their associated rewards, and sensory-motor data from the current policy evaluation. The sensory-motor data contained observations, actions, and rewards from the final steps of an evaluation episode. For \texttt{Pendulum-v1}, this includes values such as $\cos(\theta)$, $\sin(\theta)$, $\dot{\theta}$, the applied torque, and the received reward.
+
+However, the initial refinement attempts showed that the local model often made only superficial modifications. In particular, inspection of the generated policies showed that the LLM frequently changed threshold values, such as angle cutoffs, without changing the main torque equation. These modifications did not lead to meaningful performance improvements.
+
+For this reason, the refinement prompt was adjusted to encourage more meaningful changes to the controller. The improved prompt explicitly discouraged minor threshold edits and encouraged the LLM to modify the main torque computation. The prompt emphasized that the policy should use both the pendulum angle and angular velocity, because successful pendulum control requires both swing-up behavior and velocity damping.
+
+The final refinement prompt therefore focused on generating smoother continuous control formulas rather than only IF-THEN-ELSE threshold rules. This was motivated by the observation that many one-shot policies were syntactically valid but dynamically weak. Finally, the refinement loop uses a best-so-far strategy to further improve the refinement loop performance. After each generated policy is evaluated, it is accepted as the new reference policy only if it improves the mean reward. Otherwise, the previous best policy remains the reference for the next refinement iteration.
+
+\subsection{Model Selection}
+
+In Week 3, the one-shot experiments used only \texttt{llama3.1:8b}. In Week 4, the pipeline was extended to support multiple local models. The tested models were:
+
+\begin{itemize}
+\item \texttt{llama3.1:8b};
+\item \texttt{qwen2.5-coder:7b};
+\item \texttt{qwen2.5-coder:14b}.
+\end{itemize}
+
+The reason for testing coding-focused Qwen models was that the task requires the LLM to generate and revise executable Python controller code. A coding-specialized model may therefore be better suited than a general-purpose instruction model. The refinement script was modified so that each model has its own result folder and so that the best one-shot policy is selected separately for each model. This avoids refining the best policy from a different model and makes the comparison more consistent.
+
+\subsection{Experimental Setup}
+
+The refinement experiments were performed on \texttt{Pendulum-v1}. Each refinement iteration generated a new policy and evaluated it for $10$ episodes. After the refinement experiments, the best one-shot and best refined policy for each model were evaluated again over $100$ episodes. This final $100$-episode evaluation was used to obtain a more reliable comparison, since the $10$-episode evaluations showed high variance.
+
+The main metric remains the mean cumulative reward. As before, rewards in \texttt{Pendulum-v1} are negative, so values closer to zero indicate better performance. The difference between the best refined policy and the best one-shot policy is used to measure the improvement obtained through iterative refinement.
+
+\subsection{Results}
+
+Table~\ref{tab:week4_refinement_results} shows the final $100$-episode comparison between the best one-shot policy and the best refined policy for each model.
+
+\begin{table}[h]
+\centering
+\caption{Week 4 comparison between best one-shot and best refined LLM policies on \texttt{Pendulum-v1}. Results are evaluated over $100$ 
+episodes. Higher reward is better.}
+\label{tab:week4_refinement_results}
+\begin{tabular}{|l|r|r|r|}
+\hline
+Model & Best one-shot & Best refined & Improvement \\
+\hline
+\texttt{llama3.1:8b} & $-1180.920$ & $-983.608$ & $+197.312$ \\
+\texttt{qwen2.5-coder:7b} & $-1180.920$ & $-979.944$ & $+200.976$ \\
+\texttt{qwen2.5-coder:14b} & $-1180.920$ & $-1111.292$ & $+69.628$ \\
+\hline
+\end{tabular}
+\end{table}
+
+The results show that iterative refinement improved the best one-shot policy for all three tested models. The strongest refined controller was generated by \texttt{qwen2.5-coder:7b}, which improved from $-1180.920$ to $-979.944$. This corresponds to an improvement of $+200.976$ reward points. The \texttt{llama3.1:8b} model achieved a very similar improvement, reaching $-983.608$. The \texttt{qwen2.5-coder:14b} model also improved, but the improvement was smaller, reaching $-1111.292$.
+
+Although the refined policies improved over the one-shot policies, they remained far weaker than the reinforcement learning baselines from Week 2. SAC and DDPG achieved rewards around $-150$, and PPO achieved a reward around $-182$. Therefore, iterative LLM refinement improved the generated controllers, but did not make them competitive with learned RL policies on \texttt{Pendulum-v1}.
+
+\subsection{Discussion}
+
+The Week 4 results show that iterative refinement can improve LLM-generated policies under the local experimental setup. This is an important improvement over the Week 3 one-shot results. In Week 3, the LLM-generated policies were valid but weak, and there was no feedback loop that allowed the model to correct its mistakes. In Week 4, the LLM received reward feedback and sensory-motor data, and the best refined policies achieved better average rewards than their one-shot counterparts.
+
+The strongest result was obtained with \texttt{qwen2.5-coder:7b}. This suggests that model choice matters. A coding-specialized model may be more effective for this task because the output must be executable Python code. However, the results also show that larger local models do not automatically perform better. The \texttt{qwen2.5-coder:14b} model improved less than the smaller \texttt{qwen2.5-coder:7b} model. This may be due to the small number of runs, local hardware constraints, differences in generated policy style, or the fact that code-generation ability does not necessarily imply strong control reasoning.
+
+A key observation from the refinement experiments is that prompt design strongly affects the type of policy changes made by the LLM. With the initial refinement prompt, the generated policies often changed only threshold values. These changes were usually not enough to improve performance. The more formula-focused prompt produced better results because it encouraged the model to modify the main torque equation and to use both angle and angular velocity in the controller. This suggests that local LLMs may need stronger guidance to make meaningful control-policy improvements.
+
+Despite the improvement, the refined LLM policies are still classified as poor or limited according to the reward thresholds defined in Week 2. The best refined policy is close to the boundary between poor and limited performance, but it is still far from the strong-performance range achieved by the RL baselines. The refined policies also showed high variability across episodes. Some episodes achieved very good rewards close to zero, but other episodes failed badly. This indicates that the generated policies are not robust across different initial conditions.
+
+This difference between LLM-generated policies and RL baselines is important. The LLM policies are readable and interpretable because they are explicit Python functions. This makes it easy to inspect the controller logic and understand what the model tried to do. In contrast, PPO, SAC, and DDPG learn neural network policies that are less transparent. However, the RL methods are much more effective at optimizing the actual control task. The current results therefore show a trade-off between interpretability and performance.
+A best-so-far refinement strategy was used rather than always refining the most recently generated policy. This prevents poor candidate policies from becoming the starting point for later iterations, which is important because early experiments showed that some refinements degraded performance substantially.
+\subsection{Conclusion}
+
+In Week 4, I implemented iterative policy refinement for LLM-generated controllers. The refinement loop selects the best one-shot policy for each model, provides the LLM with reward feedback and sensory-motor data, generates improved policies, evaluates them, and stores all intermediate results.
+
+The results show that iterative refinement improved the LLM-generated policies for all tested models. The best result was obtained by \texttt{qwen2.5-coder:7b}, which improved from $-1180.920$ to $-979.944$ over $100$ evaluation episodes. This confirms that feedback-based refinement can improve local LLM-generated controllers.
+
+However, the refined policies are still much weaker than the reinforcement learning baselines. The best LLM controller remains far below PPO, SAC, and DDPG on \texttt{Pendulum-v1}. The high variance of the refined policies also indicates limited robustness. Therefore, the main conclusion of Week 4 is that iterative refinement is useful, but not sufficient to make small local LLMs competitive with standard reinforcement learning methods on this continuous-control task.
+
+The next step is to investigate whether reinforcement learning applied to LLM agents, for example through ART, can improve the policy-generation process more systematically than prompt-only iterative refinement.
+
+\section{Week 5: ART feasibility and extension}
+\subsection{Attempted ART Integration and Practical Feasibility Limitations}
+
+As a final extension, this project attempted to integrate ART (Agent Reinforcement Trainer) in order to move beyond prompt-based LLM policy generation and perform reward-based improvement of LLM-generated controllers. The goal was to use the environment reward from \texttt{Pendulum-v1} as a direct training signal for ART. Instead of asking the language model to generate complete Python policies, the implemented prototype simplified the task by asking the model to generate two controller parameters, $K_p$ and $K_d$. These parameters were then inserted into a proportional-derivative controller of the form
+\[
+\theta = \operatorname{atan2}(\sin(\theta), \cos(\theta)),
+\]
+\[
+\tau = K_p \theta + K_d \dot{\theta},
+\]
+where the torque was clipped to the valid action range $[-2, 2]$. Each generated parameter pair was evaluated in the Gymnasium environment, and the resulting mean episode reward was converted into a scalar reward for ART trajectories.
+
+The implementation therefore connected the main conceptual components required for ART-based training: LLM-generated controller candidates, environment evaluation, trajectory construction, reward assignment, and a call to ART's training backend. However, full local execution could not be completed because the ART local backend introduced a substantially heavier dependency and infrastructure stack than the rest of the project. While the previous LLM experiments could be executed locally through Ollama, ART required additional training-backend dependencies such as vLLM, TRL, Megatron, Megatron Bridge, and Transformer Engine. Multiple installation attempts were performed in separate Conda environments to avoid breaking the existing PPO, SAC, DDPG, and prompt-based LLM experiments. These attempts repeatedly led to incompatible package versions, missing backend modules, unavailable PyPI dependencies, and CUDA-related build failures.
+
+The main issue was that ART's local backend did not only require a lightweight inference interface, but a full local LLM fine-tuning stack. This created conflicts between different versions of vLLM and TRL, while newer ART versions also attempted to import Megatron-related model support. Installing the Megatron-related dependencies led to further problems, including unavailable packages and compilation failures for Transformer Engine due to missing CUDA development headers such as \texttt{cudnn.h} and \texttt{nccl.h}. As a result, the effort shifted from implementing the actual control experiment to resolving low-level dependency and backend compatibility problems.
+
+For this reason, ART was not included as a completed experimental baseline. This decision was made to preserve the reliability of the completed experiments and to avoid spending the remaining project time on infrastructure issues rather than on meaningful control results. The completed LLM part of the project therefore consists of one-shot policy generation and iterative prompt-based refinement, while ART is discussed as an attempted but practically infeasible extension under the available local hardware and time constraints.
+
+This limitation is still informative for the research question of the project. It shows an important practical difference between prompt-based LLM control and reward-based LLM training. Prompt-based methods can be run relatively easily on local hardware using quantized models through Ollama, whereas ART-style reinforcement learning for language models requires a more complex training infrastructure. Future work could revisit ART using a managed backend, a preconfigured cloud environment, or a workstation with a fully compatible vLLM, TRL, Megatron, and CUDA training stack.
+
+\subsection{Conclusion}
+Although ART was planned as the final extension of the project, it could not be completed within the available time because the local ART backend required a much heavier dependency stack than the other methods. Several installation attempts were made in separate environments, but the setup repeatedly failed due to version conflicts and missing or incompatible backend components such as vLLM, TRL, Megatron, Megatron Bridge, and Transformer Engine. Therefore, ART was treated as an attempted feasibility extension rather than a completed baseline. The final comparison focuses on the completed RL baselines and the prompt-based LLM methods, namely one-shot generation and iterative refinement.
+
 \begin{thebibliography}{9}
 
 \bibitem{carvalho2026}
